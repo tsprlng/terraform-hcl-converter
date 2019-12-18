@@ -56,7 +56,7 @@ tfTokenizer = ((map fromJust . filter isJust) <$>) $ (<* eof) $ many $ choice [
     (<?> "identifier") $ identifier >>= (treturn . Just . TfId)
   ]
   where
-    identifier = many1 (oneOf $ concat [['a'..'z'],['A'..'Z'],"_"])
+    identifier = many1 (oneOf $ concat [['a'..'z'],['A'..'Z'],"_","-"])
     embed :: Parsec String () String
     embed = do
       string "${"
