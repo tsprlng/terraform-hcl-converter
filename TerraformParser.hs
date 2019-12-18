@@ -16,7 +16,7 @@ import Text.Parsec.Prim (ParsecT, Stream, getParserState, statePos, token)
 sourcePos :: Monad m => ParsecT s u m SourcePos
 sourcePos = statePos `liftM` getParserState
 
-data TfToken = TfSep | TfKProvider | TfKResource | TfKData | TfKOutput | TfKVariable | TfStr String | TfBool Bool | TfInt Int | TfId String | TfBlockStart | TfBlockEnd | TfArrayStart | TfArrayEnd | TfEquals
+data TfToken = TfSep | TfKProvider | TfKResource | TfKData | TfKOutput | TfKVariable | TfStr String | TfBool Bool | TfNum String | TfId String | TfBlockStart | TfBlockEnd | TfArrayStart | TfArrayEnd | TfEquals
   deriving (Eq, Show)
 data TokOccur = TokOccur SourcePos TfToken
 
@@ -24,7 +24,7 @@ instance Show TokOccur where
   show (TokOccur _ t) = show t
 
 type TId = String
-data TRVal = TStr String | TBool Bool | TInt Int | TMap [(TId, TRVal)] | TArray [TRVal]
+data TRVal = TStr String | TBool Bool | TNum String | TMap [(TId, TRVal)] | TArray [TRVal]
   deriving (Eq, Show)
 data TfDeclaration = TfConfig [(TId, TRVal)] | TfResource TId TId [(TId, TRVal)] | TfData TId TId [(TId, TRVal)] | TfOutput TId [(TId, TRVal)] | TfVariable TId [(TId, TRVal)] | TfProvider TId [(TId, TRVal)]
   deriving (Eq, Show)
@@ -48,7 +48,7 @@ tfTokenizer = ((map fromJust . filter isJust) <$>) $ (<* eof) $ many $ choice [
       treturn . Just . TfStr . unlines $ maybeDedent lines,
         -- TODO normal join instead of unlines, if trailing \n is wrong
     (<?> "string") $ string "\"" *> (concat <$> manyTill (choice [try embed, (:[])<$>anyChar]) (string "\"")) >>= (treturn . Just . TfStr),
-    (<?> "number") $ many1 digit >>= (treturn . Just . TfInt . read),
+    (<?> "number") $ many1 (oneOf ('.':['0'..'9'])) >>= (treturn . Just . TfNum),
     (<?> "boolean") $ try $ choice [
         string "true" >> return True,
         string "false" >> return False
@@ -171,19 +171,19 @@ tfParse = many (choice [terraconfig, provider, resource, _data, output, variable
       satisfy (==TfEquals)
       rval <- tfrval
       return $ (key, rval)
-    tfrval = choice [TArray <$> tfarray, TStr <$> tfstr, TBool <$> tfbool, TInt <$> tfint]
+    tfrval = choice [TArray <$> tfarray, TStr <$> tfstr, TBool <$> tfbool, TNum <$> tfnum]
     tfbool = do
       (TfBool b) <- satisfy isTfBool
       return $ b
       where
         isTfBool (TfBool _) = True
         isTfBool _ = False
-    tfint = do
-      (TfInt i) <- satisfy isTfInt
+    tfnum = do
+      (TfNum i) <- satisfy isTfNum
       return $ i
       where
-        isTfInt (TfInt _) = True
-        isTfInt _ = False
+        isTfNum (TfNum _) = True
+        isTfNum _ = False
 
 tokenizeTF :: String -> String -> [TfToken]
 tokenizeTF name input

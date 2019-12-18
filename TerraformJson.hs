@@ -21,7 +21,7 @@ instance ToJSON TfDeclaration where
 instance ToJSON TRVal where
   toJSON (TStr s) = toJSON $ pack s
   toJSON (TBool b) = toJSON b
-  toJSON (TInt i) = toJSON i
+  toJSON (TNum i) = Number $ read i
   toJSON (TMap decls) = _json decls
   toJSON (TArray decls) = toJSON decls
 
