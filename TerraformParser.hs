@@ -47,7 +47,7 @@ tfTokenizer = ((map fromJust . filter isJust) <$>) $ (<* eof) $ many $ choice [
         manyTill anyChar (oneOf "\n")
       treturn . Just . TfStr . unlines $ maybeDedent lines,
         -- TODO normal join instead of unlines, if trailing \n is wrong
-    (<?> "string") $ string "\"" *> (concat <$> many (choice [try embed, (:[])<$>noneOf "\""])) <* string "\"" >>= (treturn . Just . TfStr),
+    (<?> "string") $ string "\"" *> (concat <$> manyTill (choice [try embed, (:[])<$>anyChar]) (string "\"")) >>= (treturn . Just . TfStr),
     (<?> "number") $ many1 digit >>= (treturn . Just . TfInt . read),
     (<?> "boolean") $ try $ choice [
         string "true" >> return True,
@@ -57,9 +57,10 @@ tfTokenizer = ((map fromJust . filter isJust) <$>) $ (<* eof) $ many $ choice [
   ]
   where
     identifier = many1 (oneOf $ concat [['a'..'z'],['A'..'Z'],"_"])
+    embed :: Parsec String () String
     embed = do
       string "${"
-      stuff <- manyTill anyChar (oneOf "}")
+      stuff <- concat <$> manyTill (concat <$> many (choice [try embed, (:[])<$>(noneOf "}")])) (oneOf "}")
       return $ "${" ++ stuff ++ "}"
     sep = choice [string "\n", string ";"]
     treturn t = do
