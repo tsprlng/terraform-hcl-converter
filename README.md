@@ -11,6 +11,8 @@ It will output them as the equivalent JSON declarations, to help you get rid of 
 
 - If you aim to directly target the JSON format yourself, this tool might provide a useful comparison based on original HCL files.
 
+> [!WARNING]  
+> Shortly after this tool was made, Hashicorp added more half-baked language features (native expressions) which this project can't parse, so it's been pretty much useless on new codebases since then. I still don't believe HCL has fundamentally improved, and would still recommend [external templating](https://github.com/mehhhhhhhhhhhhhhh/terraform-templating) for greater productivity.
 
 What is this and why?
 ---------------------
