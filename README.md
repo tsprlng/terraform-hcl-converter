@@ -8,11 +8,14 @@ It will output them as the equivalent JSON declarations, to help you get rid of 
 - If you know Haskell and are willing to interface with my dodgy parser, you can modify this project to directly output declarations in your chosen format.
 
 - If not, you can use this tool (linux amd64 binary is available in [/releases](https://github.com/tsprlng/terraform-hcl-converter/releases)) to convert to JSON, and then use your favourite language to convert the JSON to your chosen format.
-
+https://github.com/tmccombs/hcl2json?tab=readme-ov-file
 - If you aim to directly target the JSON format yourself, this tool might provide a useful comparison based on original HCL files.
 
 > [!WARNING]  
 > Shortly after this tool was made, Hashicorp added more half-baked language features (native expressions) which this project can't parse, so it's been pretty much useless on new codebases since then. I still don't believe HCL has fundamentally improved as an interface, and would still recommend [external templating](https://github.com/mehhhhhhhhhhhhhhh/terraform-templating) for greater productivity.
+
+> [!TIP]
+> A good alternative seems to be https://github.com/tmccombs/hcl2json, which is actually written in Go so it can use Hashicorp's internal stuff. It's also being consistently maintained.
 
 What is this and why?
 ---------------------
